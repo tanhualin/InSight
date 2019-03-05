@@ -1,10 +1,7 @@
-﻿
-/*
+﻿/*
 	1、获取手工修改单_普通订单 木框门页签数据 信息
-
 	EXEC [dbo].[spApp_GetYLOrdersNormal_MKM_OPP] @ordID = 4982114
 */
-
 ALTER PROC [dbo].[spApp_GetYLOrdersNormal_MKM_OPP]
 	@ordID INT
 	,@pageName NVARCHAR(10)=N'木框门'
