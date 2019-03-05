@@ -1,13 +1,4 @@
-﻿
-
-/*
-	1、获取手工修改单_普通订单背板页签数据 信息
-	EXEC [dbo].[spApp_GetManualOrdersNormal_BB_OPP] @ordID = 5005907
-	2、参数存储:spGetBackPanelCutListV2_OPP
-	EXEC Report.spGetBackPanelCutListV2_OPP  @ordID = 4040674
-*/
-
-ALTER PROC [dbo].[spApp_GetYLOrdersNormal_BB_OPP]
+﻿ALTER PROC [dbo].[spApp_GetYLOrdersNormal_BB_OPP]
 	@ordID INT
 	,@pageName NVARCHAR(10)=N'普通背板'
 	,@Factory NVARCHAR(50)=NULL
