@@ -57,7 +57,7 @@ namespace Tech2020.InSight.Oppein.YLWorkers
             using (SqlConnection sql=new SqlConnection(SqlString))
             {
                 sql.Open();
-                var form = new Forms.YLOrderForm(sql, 37576760);    //37575729,37576737，37576738,37576743
+                var form = new Forms.YLOrderForm(sql, 37576761);    //37575729,37576737，37576738,37576743
                 form.ShowDialog();
                 //Run(form);
                 //new Thread(() => Application.Run(form)).Start();
