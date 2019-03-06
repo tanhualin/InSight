@@ -65,7 +65,7 @@ namespace Tech2020.InSight.Oppein.YLWorkers.Forms
                 saveTable = Data.YLOrdersData.getTypeColumns(SqlConn);
                 var gridColumns = Data.YLOrdersData.getGridColumnsData(SqlConn, mOrdEntity.ordID, mOrdEntity.ordSource);
                 var gridPages = gridColumns.GroupBy(p => new { p.pageName, p.PageStoredProcedure, p.showPageColor })
-                    .Select(p => new GridPagesModel() { pageName = p.Key.pageName,pageStored = p.Key.PageStoredProcedure, pageColor = p.Key.showPageColor }).ToList();
+                    .Select(p => new GridPagesModel() { pageName = p.Key.pageName, pageStored = p.Key.PageStoredProcedure, pageColor = p.Key.showPageColor }).ToList();
                 if (gridPages.Count > 0)
                 {
                     //绑定第一个页签及数据
@@ -98,7 +98,7 @@ namespace Tech2020.InSight.Oppein.YLWorkers.Forms
                     BindGridColumns(this.ViewOrder, gridColumns, gridPages[0].pageName);
                     //绑定页签
                     BindTabPages(gridPages, gridColumns);
-                    DataTable table = Data.YLOrdersData.getStoredData(SqlConn, gridPages[0].pageStored, this.ordId, gridPages[0].pageName,this.Factory);
+                    DataTable table = Data.YLOrdersData.getStoredData(SqlConn, gridPages[0].pageStored, this.ordId, gridPages[0].pageName, this.Factory);
                     //绑定数据
                     GridOrder.DataSource = table;
                     if (table != null && table.Rows.Count == 0)
@@ -120,7 +120,7 @@ namespace Tech2020.InSight.Oppein.YLWorkers.Forms
                     pageTotal = Data.YLOrdersData.getYLOrdPagesTotalData(SqlConn, ordId).ToList();
                     if (table != null && table.Rows.Count > 0 && table.Columns.Contains("PlateCategory") && table.Columns.Contains("LegacyPrice"))
                     {
-                        var totalModel =new YLOrdPagesTotalModel();
+                        var totalModel = new YLOrdPagesTotalModel();
                         totalModel.PageName = GridOrder.Name;
                         totalModel.PlateCategory = table.Rows[0]["PlateCategory"].ToString();
                         if (!pageTotal.Contains(totalModel))
@@ -131,7 +131,7 @@ namespace Tech2020.InSight.Oppein.YLWorkers.Forms
                                 totalModel.TotalPrice = Convert.ToDecimal(value);
                                 pageTotal.Add(totalModel);
                                 //获取当前汇总
-                                var curModel= new YLOrdPagesTotalModel();
+                                var curModel = new YLOrdPagesTotalModel();
                                 curModel.PageName = totalModel.PageName;
                                 curModel.PlateCategory = "汇总";
                                 curModel.TotalPrice = Convert.ToDecimal(value);
@@ -166,7 +166,7 @@ namespace Tech2020.InSight.Oppein.YLWorkers.Forms
                         //tBox.Properties.Mask.EditMask = "[0-9].[0-9]*";
                         tBox.Text = "0";
                         var curPage = pageTotal.Find(p => p.PageName == gridPages[0].pageName && p.PlateCategory == cur.PlateCategory);
-                        if (curPage != null && curPage.TotalPrice > 0 )
+                        if (curPage != null && curPage.TotalPrice > 0)
                         {
                             tBox.Text = curPage.TotalPrice.ToString("0.##");
                         }
@@ -185,7 +185,7 @@ namespace Tech2020.InSight.Oppein.YLWorkers.Forms
                         TextEdit totalBox = new TextEdit();
                         totalBox.Size = new Size(68, 21);
                         totalBox.Tag = cur.PlateCategory;
-                        totalBox.Properties.Mask.MaskType=MaskType.Numeric;
+                        totalBox.Properties.Mask.MaskType = MaskType.Numeric;
 
                         totalBox.Text = cur.TotalPrice.ToString("0.##");
                         if (cur.PlateCategory != "汇总")
@@ -289,7 +289,7 @@ namespace Tech2020.InSight.Oppein.YLWorkers.Forms
                 else if (entity.optType.ToLower() == "comboboxkey" && !string.IsNullOrEmpty(entity.optStoredProcedure))
                 {
                     #region 绑定ComboBox
-                    DataTable tb = Data.YLOrdersData.getComboBoxByPageName(SqlConn, entity.optStoredProcedure,pageName);
+                    DataTable tb = Data.YLOrdersData.getComboBoxByPageName(SqlConn, entity.optStoredProcedure, pageName);
                     if (tb != null && tb.Rows.Count > 0)
                     {
                         RepositoryItemMRUEdit ricbo = new RepositoryItemMRUEdit();
@@ -412,7 +412,7 @@ namespace Tech2020.InSight.Oppein.YLWorkers.Forms
                 {
                     try
                     { //线程等待
-                        DataTable tb = Data.YLOrdersData.getStoredData(SqlConn, gridControl.Tag.ToString(), ordId,gridControl.Name,this.Factory);
+                        DataTable tb = Data.YLOrdersData.getStoredData(SqlConn, gridControl.Tag.ToString(), ordId, gridControl.Name, this.Factory);
                         while (!this.IsHandleCreated)
                         {
                         }
@@ -433,7 +433,7 @@ namespace Tech2020.InSight.Oppein.YLWorkers.Forms
                                     }
                                 }
                             }
-                            else if(tb.Columns.Contains("PlateCategory") && tb.Columns.Contains("LegacyPrice"))
+                            else if (tb.Columns.Contains("PlateCategory") && tb.Columns.Contains("LegacyPrice"))
                             {
                                 var totalModel = new YLOrdPagesTotalModel();
                                 totalModel.PageName = gridControl.Name;
@@ -463,13 +463,13 @@ namespace Tech2020.InSight.Oppein.YLWorkers.Forms
 
                                         //获取整单汇总 汇总的信息
                                         var zhModel = pageTotal.Find(p => p.PageName == "整单汇总" && p.PlateCategory == "汇总");
-                                        zhModel.TotalPrice = pageTotal.Where(p => p.PageName != zhModel.PageName && p.PlateCategory== "汇总")
+                                        zhModel.TotalPrice = pageTotal.Where(p => p.PageName != zhModel.PageName && p.PlateCategory == "汇总")
                                         .Sum(p => p.TotalPrice);
                                     }
                                 }
                             }
                             gridControl.DataSource = tb;
-                            
+
                         }));
                         if (i == TabOrder.TabPages.Count - 1)
                         {
@@ -830,20 +830,34 @@ namespace Tech2020.InSight.Oppein.YLWorkers.Forms
         private void curBox_Validating(object sender, CancelEventArgs e)
         {
             TextEdit textBox = sender as TextEdit;
-            if (textBox != null && textBox.Tag !=null)
+            if (textBox != null && textBox.Tag != null)
             {
                 decimal value = 0;
                 if (textBox.EditValue != null && textBox.EditValue != DBNull.Value)
                 {
                     value = Convert.ToDecimal(textBox.EditValue);
                 }
-                var curPrice = pageTotal.Where(p =>
-                              p.PageName == this.TabOrder.SelectedTabPage.Text &&
-                              p.PlateCategory == textBox.Tag.ToString())
-                        .Sum(p => p.TotalPrice);
-                if (curPrice != value)
+                var curEntity = pageTotal.Find(p => p.PageName == this.TabOrder.SelectedTabPage.Text &&
+                                                    p.PlateCategory == textBox.Tag.ToString());
+                if (curEntity != null)
                 {
-                    setPanelControl(textBox.Tag.ToString(), value);
+                    if (curEntity.TotalPrice != value)
+                    {
+                        curEntity.TotalPrice = value;
+                        setPanelControl(textBox.Tag.ToString(), value);
+                    }
+                }
+                else
+                {
+                    if (value != 0)
+                    {
+                        var entity = new YLOrdPagesTotalModel();
+                        entity.PageName = this.TabOrder.SelectedTabPage.Text;
+                        entity.PlateCategory = textBox.Tag.ToString();
+                        entity.TotalPrice = value;
+                        pageTotal.Add(entity);
+                        setPanelControl(textBox.Tag.ToString(), value);
+                    }
                 }
             }
         }
@@ -858,26 +872,33 @@ namespace Tech2020.InSight.Oppein.YLWorkers.Forms
                 {
                     value = Convert.ToDecimal(textBox.EditValue);
                 }
-                var curPrice = pageTotal.Where(p =>
-                              p.PageName == "整单汇总" &&
-                              p.PlateCategory == textBox.Tag.ToString())
-                        .Sum(p => p.TotalPrice);
-                if (curPrice != value)
+                var tEntity = pageTotal.Find(p => p.PageName == "整单汇总" &&
+                                                  p.PlateCategory == textBox.Tag.ToString());
+                if (tEntity != null)
                 {
-                    //切换页签后，绑定整单统计信息
-                    foreach (Control control in this.totalPanel.Controls)
+                    if (tEntity.TotalPrice != value)
                     {
-                        var tBox = control as TextEdit;
-                        if (tBox != null && tBox.Tag != null)
+                        tEntity.TotalPrice = value;
+                        //切换页签后，绑定整单统计信息
+                        foreach (Control control in this.totalPanel.Controls)
                         {
-                            if (tBox.Tag.ToString() == "汇总")
+                            var tBox = control as TextEdit;
+                            if (tBox != null && tBox.Tag != null)
                             {
-                               var price = pageTotal.Where(p =>
-                                        p.PageName == "整单汇总"
-                                       && p.PlateCategory != "汇总" && p.PlateCategory != textBox.Tag.ToString())
-                                 .Sum(p => p.TotalPrice);
-
-                                tBox.Text = (price + curPrice + value).ToString("0.##");
+                                if (tBox.Tag.ToString() == "汇总")
+                                {
+                                    var price = pageTotal.Where(p =>
+                                             p.PageName == "整单汇总"
+                                            && p.PlateCategory != "汇总" && p.PlateCategory != textBox.Tag.ToString())
+                                      .Sum(p => p.TotalPrice);
+                                    var totalEntity = pageTotal.Find(p => p.PageName == "整单汇总" &&
+                                                  p.PlateCategory == "汇总");
+                                    if (totalEntity != null)
+                                    {
+                                        totalEntity.TotalPrice = price + tEntity.TotalPrice + value;
+                                    }
+                                    tBox.Text = (price + value).ToString("0.##");
+                                }
                             }
                         }
                     }
@@ -1113,7 +1134,7 @@ namespace Tech2020.InSight.Oppein.YLWorkers.Forms
                                         var dimFX = grid.GetRowCellValue(e.RowHandle, grid.Columns["dimFX"]);
                                         var dimFY = grid.GetRowCellValue(e.RowHandle, grid.Columns["dimFY"]);
                                         var Price = grid.GetRowCellValue(e.RowHandle, grid.Columns["Price"]);
-                                        if (dimFX != null && dimFX != DBNull.Value && dimFY != null && dimFY != DBNull.Value && Price != null && Price != DBNull.Value&& Convert.ToDecimal(Price) > 0)
+                                        if (dimFX != null && dimFX != DBNull.Value && dimFY != null && dimFY != DBNull.Value && Price != null && Price != DBNull.Value && Convert.ToDecimal(Price) > 0)
                                         {
                                             var LegacyPrice = Math.Round(Convert.ToDecimal(dimFX) * Convert.ToDecimal(dimFY) * Convert.ToDecimal(Price) / 1000000, 0);
                                             grid.SetRowCellValue(e.RowHandle, grid.Columns["LegacyPrice"], LegacyPrice);
@@ -1171,9 +1192,9 @@ namespace Tech2020.InSight.Oppein.YLWorkers.Forms
                     }
                     catch (Exception err)
                     {
-                        throw new Exception("修改异常！"+err.Message);
+                        throw new Exception("修改异常！" + err.Message);
                     }
-                    
+
                 }
             }
 
@@ -1284,9 +1305,9 @@ namespace Tech2020.InSight.Oppein.YLWorkers.Forms
                         var tBox = control as TextEdit;
                         if (tBox != null && tBox.Tag != null)
                         {
-                            var tPrice=pageTotal.Where(p => p.PageName != tPageName && p.PlateCategory == tBox.Tag.ToString())
+                            var tPrice = pageTotal.Where(p => p.PageName != tPageName && p.PlateCategory == tBox.Tag.ToString())
                                 .Sum(p => p.TotalPrice);
-                            var tEntity =pageTotal.Find(p => p.PageName == tPageName && p.PlateCategory == tBox.Tag.ToString());
+                            var tEntity = pageTotal.Find(p => p.PageName == tPageName && p.PlateCategory == tBox.Tag.ToString());
                             if (tEntity != null)
                             {
                                 tEntity.TotalPrice = tPrice;
@@ -1375,10 +1396,10 @@ namespace Tech2020.InSight.Oppein.YLWorkers.Forms
             {
                 try
                 {
-                    DataTable table= Data.YLOrdersData.getStoredData(SqlConn, gridControl.Tag.ToString(), ordId, gridControl.Name, Factory);
+                    DataTable table = Data.YLOrdersData.getStoredData(SqlConn, gridControl.Tag.ToString(), ordId, gridControl.Name, Factory);
                     if (table != null && table.Rows.Count == 0)
                     {
-                       TabOrder.SelectedTabPage.Appearance.Header.BackColor = Color.BurlyWood;
+                        TabOrder.SelectedTabPage.Appearance.Header.BackColor = Color.BurlyWood;
                     }
                     gridControl.DataSource = table;
                 }
@@ -1396,7 +1417,7 @@ namespace Tech2020.InSight.Oppein.YLWorkers.Forms
 
         private void btnSubmit_Click(object sender, EventArgs e)
         {
-            if (MessageBox.Show("是否保存当前页签操作数据", "信息提示",MessageBoxButtons.YesNo, MessageBoxIcon.Warning,
+            if (MessageBox.Show("是否保存当前页签操作数据", "信息提示", MessageBoxButtons.YesNo, MessageBoxIcon.Warning,
                 MessageBoxDefaultButton.Button2, 0, false) == DialogResult.Yes)
             {
                 Save(this.TabOrder.SelectedTabPage);
@@ -1406,7 +1427,7 @@ namespace Tech2020.InSight.Oppein.YLWorkers.Forms
                 //刷新
                 saveTable.Clear();
                 GridControl grid = getGridControlByPages(TabOrder.SelectedTabPage);
-                if (grid != null && grid.Tag !=null)
+                if (grid != null && grid.Tag != null)
                 {
                     grid.DataSource = Data.YLOrdersData.getStoredData(SqlConn, grid.Tag.ToString(), ordId, TabOrder.SelectedTabPage.Text, Factory);
                 }
@@ -1460,7 +1481,7 @@ namespace Tech2020.InSight.Oppein.YLWorkers.Forms
             }
             #endregion
 
-            if (this.curPanel.Tag !=null|| this.saveTable.Rows.Count > 0)
+            if (this.curPanel.Tag != null || this.saveTable.Rows.Count > 0)
             {
                 if (MessageBox.Show("是否保存前页签的操作数据", "信息提示",
                     MessageBoxButtons.YesNo, MessageBoxIcon.Warning,
@@ -1596,7 +1617,7 @@ namespace Tech2020.InSight.Oppein.YLWorkers.Forms
                     {
                         bSubmit = false;
                         int index = err.Message.IndexOf("\r\n");
-                        if (index>0)
+                        if (index > 0)
                         {
                             MessageBox.Show("批量挑板删除板功能，数据提交失败！" + err.Message.Substring(0, index), "提示");
                         }
@@ -1624,7 +1645,7 @@ namespace Tech2020.InSight.Oppein.YLWorkers.Forms
                                         cur.TotalPrice = 0;
                                     }
                                     //整单汇总
-                                    var totalList= pageTotal.Where(p => p.PageName == "整单汇总");
+                                    var totalList = pageTotal.Where(p => p.PageName == "整单汇总");
                                     foreach (var tl in totalList)
                                     {
                                         tl.TotalPrice = pageTotal.Where(p => p.PageName != tl.PageName && p.PlateCategory == tl.PlateCategory)
@@ -1639,7 +1660,7 @@ namespace Tech2020.InSight.Oppein.YLWorkers.Forms
                                     {
                                         if (row[0] != null && row[0] != DBNull.Value && !string.IsNullOrEmpty(row[0].ToString()))
                                         {
-                                            var curModel = pageTotal.Find(p=>p.PageName== GridOrder.Name && p.PlateCategory== row[0].ToString());
+                                            var curModel = pageTotal.Find(p => p.PageName == GridOrder.Name && p.PlateCategory == row[0].ToString());
                                             if (curModel != null)
                                             {
                                                 curModel.TotalPrice = 0;
@@ -1650,12 +1671,12 @@ namespace Tech2020.InSight.Oppein.YLWorkers.Forms
                                                 }
                                             }
                                             //整单汇总
-                                            var totalModel =pageTotal.Find(p => p.PageName == "整单汇总" && p.PlateCategory == row[0].ToString());
+                                            var totalModel = pageTotal.Find(p => p.PageName == "整单汇总" && p.PlateCategory == row[0].ToString());
                                             if (totalModel != null)
                                             {
-                                                totalModel.TotalPrice =pageTotal.Where(p =>
-                                                            p.PageName != totalModel.PageName &&
-                                                            p.PlateCategory == totalModel.PlateCategory).Sum(p=>p.TotalPrice);
+                                                totalModel.TotalPrice = pageTotal.Where(p =>
+                                                             p.PageName != totalModel.PageName &&
+                                                             p.PlateCategory == totalModel.PlateCategory).Sum(p => p.TotalPrice);
                                             }
                                         }
                                     }
@@ -1920,7 +1941,7 @@ namespace Tech2020.InSight.Oppein.YLWorkers.Forms
                 }
                 //if (totalList.Count > 0)
                 //{
-                    //this.pageTotal = Data.YLOrdersData.getYLOrdPagesTotalData(SqlConn, ordId).ToList();
+                //this.pageTotal = Data.YLOrdersData.getYLOrdPagesTotalData(SqlConn, ordId).ToList();
                 //}
             }
             catch (Exception err)
@@ -1983,18 +2004,39 @@ namespace Tech2020.InSight.Oppein.YLWorkers.Forms
                 var tBox = control as TextEdit;
                 if (tBox != null && tBox.Tag != null)
                 {
-                    if (tBox.Tag.ToString() == PlateCategory)
+                    if (tBox.Tag.ToString() == "汇总")
                     {
-                        tBox.Text = (sPrice + value).ToString("0.##");
-                    }
-                    else if(tBox.Tag.ToString() == "汇总")
-                    {
-                        price = pageTotal.Where(p =>
+                        if (PlateCategory == "汇总")
+                        {
+                            var tEntity = pageTotal.Find(p => p.PageName == "整单汇总" && p.PlateCategory == tBox.Tag.ToString());
+                            if (tEntity != null)
+                            {
+                                tEntity.TotalPrice = sPrice + value;
+                            }
+                            tBox.Text = (sPrice + value).ToString("0.##");
+                        }
+                        else
+                        {
+                            price = pageTotal.Where(p =>
                                 p.PageName == "整单汇总"
-                               && p.PlateCategory != "汇总" && p.PlateCategory!= PlateCategory)
-                         .Sum(p => p.TotalPrice);
-
-                        tBox.Text = (price+ sPrice + value).ToString("0.##");
+                               && p.PlateCategory != "汇总" && p.PlateCategory != PlateCategory)
+                            .Sum(p => p.TotalPrice);
+                            var tEntity = pageTotal.Find(p => p.PageName == "整单汇总" && p.PlateCategory == tBox.Tag.ToString());
+                            if (tEntity != null)
+                            {
+                                tEntity.TotalPrice = price + sPrice + value;
+                            }
+                            tBox.Text = (price + sPrice + value).ToString("0.##");
+                        }
+                    }
+                    else if (tBox.Tag.ToString() == PlateCategory)
+                    {
+                        var tEntity = pageTotal.Find(p => p.PageName == "整单汇总" && p.PlateCategory == PlateCategory);
+                        if (tEntity != null)
+                        {
+                            tEntity.TotalPrice = sPrice + value;
+                        }
+                        tBox.Text = (sPrice + value).ToString("0.##");
                     }
                 }
             }
@@ -2002,13 +2044,26 @@ namespace Tech2020.InSight.Oppein.YLWorkers.Forms
             foreach (Control control in this.curPanel.Controls)
             {
                 var tBox = control as TextEdit;
-                if (tBox != null && tBox.Tag.ToString() == "汇总")
+                if (tBox != null && tBox.Tag.ToString() == "汇总" && PlateCategory != "汇总")
                 {
                     //当前页签除该编辑板件类别外价格汇总
                     price = pageTotal.Where(p =>
                                        p.PageName == this.TabOrder.SelectedTabPage.Text &&
                                        p.PlateCategory != PlateCategory && p.PlateCategory != "汇总")
                                  .Sum(p => p.TotalPrice);
+                    var tEntity = pageTotal.Find(p => p.PageName == this.TabOrder.SelectedTabPage.Text && p.PlateCategory == tBox.Tag.ToString());
+                    if (tEntity != null)
+                    {
+                        tEntity.TotalPrice = price + value;
+                    }
+                    else
+                    {
+                        var entity = new YLOrdPagesTotalModel();
+                        entity.PageName = this.TabOrder.SelectedTabPage.Text;
+                        entity.PlateCategory = tBox.Tag.ToString();
+                        entity.TotalPrice = price + value; ;
+                        pageTotal.Add(entity);
+                    }
                     tBox.Text = (price + value).ToString("0.##");
                 }
             }
