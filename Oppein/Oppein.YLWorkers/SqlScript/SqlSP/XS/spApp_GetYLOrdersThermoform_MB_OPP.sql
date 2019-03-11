@@ -1,11 +1,12 @@
-﻿ALTER  PROC [dbo].[spApp_GetYLOrdersThermoform_MB_OPP]
+﻿
+ALTER  PROC [dbo].[spApp_GetYLOrdersThermoform_MB_OPP]
 	@ordID INT
 	,@pageName NVARCHAR(50)=N'吸塑门'
 	,@Factory NVARCHAR(50) = NULL
 AS
 SET NOCOUNT ON;
 
---DECLARE @ordID INT=3580686
+--DECLARE @ordID INT=6665782
 --	,@pageName NVARCHAR(10)=N'吸塑门'
 --	,@Factory NVARCHAR(50)
 
@@ -106,16 +107,16 @@ BEGIN
 		,ISNULL(org.info2,t.UT48_126) AS oInfo2
 		,ISNULL(org.info3,itmAv.info3) AS oInfo3
 		,COALESCE(org.info5,ha.WenLu,t.UT48_124) AS oInfo5
-		,org.info6 AS oInfo6
-		,org.info7 AS oInfo7
-		,org.info8 AS oInfo8
-		,org.info9 AS oInfo9
-		,org.info10 AS oInfo10
-		,org.info11 AS oInfo11
-		,org.info12 AS oInfo12
-		,org.info13 AS oInfo13
-		,org.info14 AS oInfo14
-		,org.info15 AS oInfo15
+		,ISNULL(org.info6,ha.Remark) AS oInfo6
+		,ISNULL(org.info7,ha.hole) AS oInfo7
+		,ISNULL(org.info8,ha.holedis) AS oInfo8
+		,ISNULL(org.info9,ha.newdm1) AS oInfo9
+		,ISNULL(org.info10,ha.newdm2) AS oInfo10
+		,ISNULL(org.info11,ha.newdm3) AS oInfo11
+		,ISNULL(org.info12,ha.newdm4) AS oInfo12
+		,ISNULL(org.info13,ha.newdm5) AS oInfo13
+		,ISNULL(org.info14,ha.newdmRemark) AS oInfo14
+		,ISNULL(org.info15,ha.holeRemark) AS oInfo15
 		,ISNULL(ha.Factory,@Factory) AS Factory
 		,ha.Duty
 		,ISNULL(ha.PlateCategory,@PlateCategory) AS PlateCategory
@@ -369,26 +370,26 @@ BEGIN
 		,org.info3 AS oInfo3
 		,org.info5
 		,org.info5 AS oInfo5
-		,NULL AS info6
-		,NULL	AS info7	
-		,NULL	AS info8
-		,NULL	AS info9
-		,NULL	AS info10
-		,NULL	AS info11
-		,NULL	AS info12
-		,NULL	AS info13
-		,NULL AS info14
-		,NULL AS info15
-		,NULL AS oInfo6
-		,NULL AS oInfo7
-		,NULL AS oInfo8
-		,NULL AS oInfo9
-		,NULL AS oInfo10
-		,NULL AS oInfo11
-		,NULL AS oInfo12
-		,NULL AS oInfo13
-		,NULL AS oInfo14
-		,NULL AS oInfo15
+		,ha.Remark AS info6
+		,ha.hole 	AS info7	
+		,ha.holedis	AS info8
+		,ha.newdm1	AS info9
+		,ha.newdm2	AS info10
+		,ha.newdm3	AS info11
+		,ha.newdm4	AS info12
+		,ha.newdm5	AS info13
+		,ha.newdmRemark AS info14
+		,ha.holeRemark AS info15
+		,ha.Remark AS oInfo6
+		,ha.hole  AS oInfo7
+		,ha.holedis	 AS oInfo8
+		,ha.newdm1 AS oInfo9
+		,ha.newdm2 AS oInfo10
+		,ha.newdm3 AS oInfo11
+		,ha.newdm4 AS oInfo12
+		,ha.newdm5 AS oInfo13
+		,ha.newdmRemark AS oInfo14
+		,ha.holeRemark AS oInfo15
 		,@Factory AS Factory
 		,ha.Duty AS Duty
 		,@PlateCategory AS PlateCategory

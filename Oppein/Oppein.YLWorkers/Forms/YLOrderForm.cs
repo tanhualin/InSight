@@ -6,6 +6,7 @@ using System.Data.SqlClient;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using DevExpress.Utils;
@@ -704,20 +705,60 @@ namespace Tech2020.InSight.Oppein.YLWorkers.Forms
         private void btnEdit_ButtonClick(object sender, ButtonPressedEventArgs e)
         {
             ButtonEdit btn = sender as ButtonEdit;
-            if (!string.IsNullOrEmpty(btn.Text))
+            if (btn != null && btn.Parent != null && !string.IsNullOrEmpty(btn.Text))
             {
-                if (File.Exists(btn.Text))
+                GridControl gControl = btn.Parent as GridControl;
+                if (gControl != null)
                 {
-                    System.Diagnostics.Process.Start(btn.Text);
+                    GridView grid = gControl.MainView as GridView;
+                    if (grid != null)
+                    {
+                        var rowView = grid.GetFocusedRow() as DataRowView;
+                        int iItmid = rowView.DataView.Table.Columns.IndexOf("itmID");
+                        int iItmInstance = rowView.DataView.Table.Columns.IndexOf("itmIDInstance");
+                        int iOlnid = rowView.DataView.Table.Columns.IndexOf("olnID");
+                        int iOlnInstance = rowView.DataView.Table.Columns.IndexOf("olnIDInstance");
+                        if (iItmid > -1 && iItmInstance > -1 && iOlnid > -1 && iOlnInstance > -1)
+                        {
+                            var row = rowView.Row as DataRow;
+                            if (row != null)
+                            {
+                                int itmid = Convert.ToInt32(row.ItemArray[iItmid]);
+                                int itmInstance = Convert.ToInt32(row.ItemArray[iItmInstance]);
+                                int olnid = Convert.ToInt32(row.ItemArray[iOlnid]);
+                                int olnidInstance = Convert.ToInt32(row.ItemArray[iOlnInstance]);
+                                var oriCNCProgram = Data.YLOrdersData.getYLOrderOriCNCProgram(SqlConn, itmid, itmInstance, olnid, olnidInstance);
+                                if (!string.IsNullOrEmpty(oriCNCProgram))
+                                {
+                                    string filename = Path.GetFileName(btn.Text);
+                                    if (string.IsNullOrEmpty(filename))
+                                    {
+                                        filename = DateTime.Now.ToString("yyyyMMddhhmmss_fff") + ".mpr";
+                                    }
+                                    string filePath = AppDomain.CurrentDomain.BaseDirectory + @"\files\";
+                                    if (!Directory.Exists(filePath))
+                                    {
+                                        Directory.CreateDirectory(filePath);
+                                    }
+                                    if (File.Exists(filePath + filename))
+                                    {
+                                        File.Delete(filePath + filename);
+                                    }
+                                    byte[] bytes = Encoding.ASCII.GetBytes(oriCNCProgram);
+                                    // 把 byte[] 写入文件
+                                    FileStream fs = new FileStream(filePath + filename, FileMode.OpenOrCreate);
+                                    BinaryWriter bw = new BinaryWriter(fs);
+                                    bw.Write(bytes);
+                                    bw.Close();
+                                    fs.Close();
+
+                                    System.Diagnostics.Process.Start(filePath + filename);
+                                }
+                            }
+                        }
+
+                    }
                 }
-                else
-                {
-                    MessageBox.Show("找不到文件" + btn.Text, "信息提示");
-                }
-            }
-            else
-            {
-                MessageBox.Show("无该FXM文件", "信息提示");
             }
         }
         private void searchLookUp_Validating(object sender, CancelEventArgs e)
@@ -1783,7 +1824,7 @@ namespace Tech2020.InSight.Oppein.YLWorkers.Forms
                                                 }
                                             }
                                             //获取整单汇总 板件类别的信息
-                                            var zpModel = pageTotal.Find(p => p.PageName == "整单汇总" && p.PlateCategory == curModel.PlateCategory);
+                                            var zpModel = pageTotal.Find(p => p.PageName == "整单汇总" && p.PlateCategory == row[0].ToString());
                                             zpModel.TotalPrice = pageTotal.Where(p => p.PageName != zpModel.PageName && p.PlateCategory == zpModel.PlateCategory)
                                             .Sum(p => p.TotalPrice);
                                         }

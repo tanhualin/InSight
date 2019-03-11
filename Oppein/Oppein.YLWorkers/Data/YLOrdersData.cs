@@ -285,6 +285,46 @@ namespace Tech2020.InSight.Oppein.YLWorkers.Data
 
             return table;
         }
+        public static string getYLOrderOriCNCProgram(SqlConnection sqlCon, int itmid, int itmidInstance, int olnid, int olnidInstance)
+        {
+            var cmd = sqlCon.CreateCommand();
+            cmd.CommandText = "[dbo].[spApp_GetYLOrderOriCNCProgram_OPP]";
+            cmd.CommandType = CommandType.StoredProcedure;
+
+            var param = cmd.CreateParameter();
+            param.ParameterName = "@itmID";
+            param.Direction = ParameterDirection.Input;
+            param.DbType = DbType.Int32;
+            param.Value = itmid;
+            cmd.Parameters.Add(param);
+            var itmParam = cmd.CreateParameter();
+            itmParam.ParameterName = "@itmIDInstance";
+            itmParam.Direction = ParameterDirection.Input;
+            itmParam.DbType = DbType.Int32;
+            itmParam.Value = itmidInstance;
+            cmd.Parameters.Add(itmParam);
+
+            var olnParam = cmd.CreateParameter();
+            olnParam.ParameterName = "@olnID";
+            olnParam.Direction = ParameterDirection.Input;
+            olnParam.DbType = DbType.Int32;
+            olnParam.Value = olnid;
+            cmd.Parameters.Add(olnParam);
+
+            var olnInstanceParam = cmd.CreateParameter();
+            olnInstanceParam.ParameterName = "@olnIDInstance";
+            olnInstanceParam.Direction = ParameterDirection.Input;
+            olnInstanceParam.DbType = DbType.Int32;
+            olnInstanceParam.Value = olnidInstance;
+            cmd.Parameters.Add(olnInstanceParam);
+
+            object o = cmd.ExecuteScalar();
+            if (o != null)
+            {
+                return o.ToString();
+            }
+            return String.Empty;
+        }
 
         public static void getMOrdItemDimensions(SqlConnection sqlCon, decimal dimFX, decimal dimFY, decimal dimFZ,
             string edgeCode, string topSurCode, int WenLi, ref double dimCX, ref double dimCY)

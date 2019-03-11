@@ -99,6 +99,79 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="SqlScript\SqlSP\BF\spApp_GetYLOrdersNormal_BFC_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\BF\spApp_GetYLOrdersNormal_BFMT_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\BF\spApp_GetYLOrdersNormal_BFMX_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\BF\spApp_GetYLOrdersNormal_BFM_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\CmOption\spAPP_GetYLOrdCategory_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\CmOption\spAPP_GetYLOrdFactory_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\CmOption\spApp_GetYLOrdItems_LKM_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\CmOption\spApp_GetYLOrdSliddingDoorItems_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\KQ\spApp_GetYLOrdersNormal_KQBB_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\KQ\spApp_GetYLOrdersNormal_KQBJ_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\KQ\spApp_GetYLOrdersNormal_KQGNJ_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\KQ\spApp_GetYLOrdersNormal_KQGS_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\KQ\spApp_GetYLOrdersNormal_KQM_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\Normal\spApp_GetYLOrdersNormal_BB_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\Normal\spApp_GetYLOrdersNormal_BL_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\Normal\spApp_GetYLOrdersNormal_DX_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\Normal\spApp_GetYLOrdersNormal_GNJ_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\Normal\spApp_GetYLOrdersNormal_GS_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\Normal\spApp_GetYLOrdersNormal_MKC_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\Normal\spApp_GetYLOrdersNormal_MKMX_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\Normal\spApp_GetYLOrdersNormal_MKM_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\Normal\spApp_GetYLOrdersNormal_MKT_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\Normal\spApp_GetYLOrdersNormal_WJ_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\OrderHeader\spApp_GetYLOrdDelTypeColumns_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\OrderHeader\spApp_GetYLOrdersHeader_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\OrderHeader\spApp_GetYLOrdersNormal_Original_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\OrderHeader\spApp_GetYLOrdersTypeColumns_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\OrderHeader\spApp_GetYLOrdGridColumns_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\OrderHeader\spApp_GetYLOrdPagesTotalData_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\Other\spApp_GetYLOrdersNormalCAD_TM_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\Other\spApp_GetYLOrdersNormal_CY_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\Other\spApp_GetYLOrdersNormal_LKM_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\Other\spApp_GetYLOrdersNormal_SD_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\Other\spApp_GetYLOrdersNormal_TM_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\SM\spApp_GetYLOrdersNormalCAD_SMWJ_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\SM\spApp_GetYLOrdersNormal_SMBB_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\SM\spApp_GetYLOrdersNormal_SMBJ_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\SM\spApp_GetYLOrdersNormal_SMCM_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\SM\spApp_GetYLOrdersNormal_SMDX_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\SM\spApp_GetYLOrdersNormal_SMGNJ_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\SM\spApp_GetYLOrdersNormal_SMGS_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\SM\spApp_GetYLOrdersNormal_SMM_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\SM\spApp_GetYLOrdersNormal_SMTM_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\SM\spApp_GetYLOrdersNormal_SMWJ_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\spAPP_delYLOrdBOMBatch_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\spAPP_utlYLOrdEditingBatch_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\spAPP_utlYLOrdEditingBatch_WJ_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\XS\spApp_GetYLOrdersThermoformCAD_BJ_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\XS\spApp_GetYLOrdersThermoformCAD_CM_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\XS\spApp_GetYLOrdersThermoformCAD_MB_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\XS\spApp_GetYLOrdersThermoform_BB_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\XS\spApp_GetYLOrdersThermoform_BJ_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\XS\spApp_GetYLOrdersThermoform_CM_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\XS\spApp_GetYLOrdersThermoform_GS_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\XS\spApp_GetYLOrdersThermoform_MB_OPP.sql" />
+    <Content Include="SqlScript\SqlSP\XS\spApp_GetYLOrdersThermoform_MX_OPP.sql" />
+    <Content Include="SqlScript\SqlTable\CUS_YLOrdFactory_OPP.sql" />
+    <Content Include="SqlScript\SqlTable\CUS_YLOrdGridColumnsData_OPP.sql" />
+    <Content Include="SqlScript\SqlTable\CUS_YLOrdOriginalBOMDataLog_OPP.sql" />
+    <Content Include="SqlScript\SqlTable\CUS_YLOrdOriginalBOMData_OPP.sql" />
+    <Content Include="SqlScript\SqlTable\CUS_YLOrdPagesData_OPP.sql" />
+    <Content Include="SqlScript\SqlTable\CUS_YLOrdPlateCategory_OPP.sql" />
+    <Content Include="SqlScript\SqlTable\CUS_YLOrdSliddingDoorItems_OPP.sql" />
+    <Content Include="SqlScript\SqlTable\YLOrdDelTableType_OPP.sql" />
+    <Content Include="SqlScript\SqlTable\YLOrdTableType_OPP.sql" />
+    <Content Include="SqlScript\SqlTable\YLOrdTotalTableType_OPP.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="SqlScript\SqlTableData\Data.xls" />
+    <None Include="SqlScript\SqlTableData\LKM.xls" />
+    <None Include="SqlScript\SqlTableData\SD.xls" />
+  </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
