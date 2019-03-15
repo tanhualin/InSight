@@ -735,7 +735,7 @@ namespace Tech2020.InSight.Oppein.YLWorkers.Forms
                                     {
                                         filename = DateTime.Now.ToString("yyyyMMddhhmmss_fff") + ".mpr";
                                     }
-                                    string filePath = AppDomain.CurrentDomain.BaseDirectory + @"\files\";
+                                    string filePath = Path.GetPathRoot(AppDomain.CurrentDomain.BaseDirectory) + @"InSightFiles\";
                                     if (!Directory.Exists(filePath))
                                     {
                                         Directory.CreateDirectory(filePath);
@@ -1561,20 +1561,8 @@ namespace Tech2020.InSight.Oppein.YLWorkers.Forms
                             var tBox = control as TextEdit;
                             if (tBox != null && tBox.Tag != null && !string.IsNullOrEmpty(tBox.Text))
                             {
-                                var entity = new YLOrdPagesTotalModel();
-                                entity.PageName = "整单汇总";
-                                entity.PlateCategory = tBox.Tag.ToString();
+                                var entity = pageTotal.Find(p => p.PageName == "整单汇总" && p.PlateCategory == tBox.Tag.ToString());
                                 entity.TotalPrice = Convert.ToDecimal(tBox.Text);
-                                //totalList.Add(entity);
-                                if (pageTotal.Contains(entity))
-                                {
-                                    pageTotal.Remove(entity);
-                                }
-                                //若价格为0，则不添加
-                                if (entity.TotalPrice > 0)
-                                {
-                                    pageTotal.Add(entity);
-                                }
                             }
                         }
                         #endregion
@@ -1904,21 +1892,9 @@ namespace Tech2020.InSight.Oppein.YLWorkers.Forms
             {
                 var tBox = control as TextEdit;
                 if (tBox != null && tBox.Tag != null && !string.IsNullOrEmpty(tBox.Text))
-                {//
-                    var entity = new YLOrdPagesTotalModel();
-                    entity.PageName = "整单汇总";
-                    entity.PlateCategory = tBox.Tag.ToString();
+                {
+                    var entity = pageTotal.Find(p => p.PageName == "整单汇总" && p.PlateCategory == tBox.Tag.ToString());
                     entity.TotalPrice = Convert.ToDecimal(tBox.Text);
-                    //totalList.Add(entity);
-                    if (pageTotal.Contains(entity))
-                    {
-                        pageTotal.Remove(entity);
-                    }
-                    //若价格为0，则不添加
-                    if (entity.TotalPrice > 0)
-                    {
-                        pageTotal.Add(entity);
-                    }
                 }
             }
             #endregion
