@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Data.SqlClient;
+using System.Diagnostics.Eventing.Reader;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -548,6 +549,101 @@ namespace Tech2020.InSight.Oppein.YLWorkers.Forms
             args.ToolTip = tooltipText;
             return args;
         }
+
+        private ItemDimensionModel getItemDimension(string pageName,string edgeCode, int dimZ)
+        {
+            var resultEntity = new ItemDimensionModel();
+            if (pageName == "普通柜身" || pageName == "普通功能件")
+            {
+                if (edgeCode == "1111")
+                {
+                    #region 代码为1111时
+                    if (dimZ == 12 || dimZ == 18 || dimZ == 25)
+                    {
+                        resultEntity.dimX = 2;
+                        resultEntity.dimY = 2;
+                        resultEntity.dimZ = 0.02M;
+                    }
+                    else if (dimZ == 60)
+                    {
+                        resultEntity.dimX = 2.5M;
+                        resultEntity.dimY = 2.5M;
+                        resultEntity.dimZ = 0.02M;
+                    }
+                    else
+                    {
+                        resultEntity.dimX = 0;
+                        resultEntity.dimY = 0;
+                        resultEntity.dimZ = 0;
+                    }
+                    #endregion
+                }
+                else if (edgeCode == "1112")
+                {
+                    #region 代码为1112时
+                    if (dimZ == 18 || dimZ == 25)
+                    {
+                        resultEntity.dimX = 2;
+                        resultEntity.dimY = 2.5M;
+                        resultEntity.dimZ = 0.02M;
+                    }
+                    else
+                    {
+                        resultEntity.dimX = 0;
+                        resultEntity.dimY = 0;
+                        resultEntity.dimZ = 0;
+                    }
+                    #endregion
+                }
+                else if (edgeCode == "2222")
+                {
+                    #region 代码为2222时
+                    if (dimZ == 18 || dimZ == 25)
+                    {
+                        resultEntity.dimX = 3;
+                        resultEntity.dimY = 3;
+                        resultEntity.dimZ = 0.02M;
+                    }
+                    else if (dimZ == 36 || dimZ == 46)
+                    {
+                        resultEntity.dimX = 3.5M;
+                        resultEntity.dimY = 3.5M;
+                        resultEntity.dimZ = 0.02M;
+                    }
+                    else
+                    {
+                        resultEntity.dimX = 0;
+                        resultEntity.dimY = 0;
+                        resultEntity.dimZ = 0;
+                    }
+                    #endregion
+                }
+                else
+                {
+                    resultEntity.dimX = 0;
+                    resultEntity.dimY = 0;
+                    resultEntity.dimZ = 0;
+                }
+            }
+            else if (pageName == "实木柜身" || pageName == "实木功能件")
+            {
+                if (edgeCode == "1111")
+                {
+                    resultEntity.dimX = 1.5M;
+                    resultEntity.dimY = 1.5M;
+                    resultEntity.dimZ = 0.02M;
+                }
+                else
+                {
+                    resultEntity.dimX = 0;
+                    resultEntity.dimY = 0;
+                    resultEntity.dimZ = 0;
+                }
+            }
+
+            return resultEntity;
+        }
+
         #endregion
 
         #region 单元格控件事件
@@ -1062,49 +1158,410 @@ namespace Tech2020.InSight.Oppein.YLWorkers.Forms
             if (e.Column.OptionsColumn.AllowEdit)
             {
                 GridView grid = sender as GridView;
-                if (grid != null)
+                if (grid != null && grid.Tag != null && !string.IsNullOrEmpty(grid.Tag.ToString()))
                 {
                     try
                     {
-                        if (grid.Tag != null && !string.IsNullOrEmpty(grid.Tag.ToString()) &&
-                        (grid.Tag.ToString() == "普通柜身" || grid.Tag.ToString() == "实木柜身"))
+                        #region 有关联的存在下以项目
+                        if (e.Column.FieldName == "dimCX" || e.Column.FieldName == "dimCY" || e.Column.FieldName == "dimCZ" 
+                                || e.Column.FieldName == "dimFX" || e.Column.FieldName == "dimFY" || e.Column.FieldName == "dimFZ"
+                                || e.Column.FieldName == "edgeCode" ||e.Column.FieldName == "oriReqQty" || e.Column.FieldName == "Price")
                         {
-                            #region 尺寸联动
-                            if (e.Column.FieldName == "dimFX" || e.Column.FieldName == "dimFY" ||
-                                e.Column.FieldName == "dimFZ" || e.Column.FieldName == "edgeCode" || e.Column.FieldName == "topSurCode")
+                            #region 尺寸关联
+                            if (grid.Columns["dimCX"] != null && grid.Columns["dimCY"] != null &&
+                                grid.Columns["dimCZ"] != null && grid.Columns["dimFX"] != null &&
+                                grid.Columns["dimFY"] != null && grid.Columns["dimFZ"] != null &&
+                                grid.Columns["edgeCode"] != null)
                             {
+                                var dimCX = grid.GetRowCellValue(e.RowHandle, grid.Columns["dimCX"]);
+                                var dimCY = grid.GetRowCellValue(e.RowHandle, grid.Columns["dimCY"]);
+                                var dimCZ = grid.GetRowCellValue(e.RowHandle, grid.Columns["dimCZ"]);
                                 var dimFX = grid.GetRowCellValue(e.RowHandle, grid.Columns["dimFX"]);
                                 var dimFY = grid.GetRowCellValue(e.RowHandle, grid.Columns["dimFY"]);
                                 var dimFZ = grid.GetRowCellValue(e.RowHandle, grid.Columns["dimFZ"]);
                                 var edgeCode = grid.GetRowCellValue(e.RowHandle, grid.Columns["edgeCode"]);
-                                var topSurCode = grid.GetRowCellValue(e.RowHandle, grid.Columns["topSurCode"]);
-                                var WenLi = grid.GetRowCellValue(e.RowHandle, grid.Columns["WenLi"]);
-                                if (dimFX != null && dimFX != DBNull.Value && dimFY != null && dimFY != DBNull.Value && dimFZ != null && dimFZ != DBNull.Value && edgeCode != null
-                                    && edgeCode != DBNull.Value && topSurCode != null && topSurCode != DBNull.Value && WenLi != null && WenLi != DBNull.Value)
+                                if (e.Column.FieldName == "dimCX")
                                 {
-                                    try
+                                    #region 尺寸关联，根据裁切尺寸，计算完工
+                                    if (dimCX != null && dimCX != DBNull.Value && dimFX != null && dimFX != DBNull.Value &&
+                                        dimCZ != null && dimCZ != DBNull.Value && edgeCode != null && edgeCode != DBNull.Value)
                                     {
-                                        double dimCX = 0, dimCY = 0;
-                                        Data.YLOrdersData.getMOrdItemDimensions(SqlConn, Convert.ToDecimal(dimFX), Convert.ToDecimal(dimFY), Convert.ToDecimal(dimFZ), edgeCode.ToString(), topSurCode.ToString(), Convert.ToInt16(WenLi), ref dimCX, ref dimCY);
-                                        if (dimCX != null && dimCX != 0 && dimCY != null && dimCY != 0)
+                                        try
                                         {
-                                            grid.SetRowCellValue(e.RowHandle, grid.Columns["dimCX"], dimCX);
-                                            grid.SetRowCellValue(e.RowHandle, grid.Columns["dimCY"], dimCY);
-                                            grid.SetRowCellValue(e.RowHandle, grid.Columns["dimCZ"], dimFZ);
+                                            decimal dDimX = Convert.ToDecimal(dimCX);
+                                            decimal dDimFX = Convert.ToDecimal(dimFX);
+                                            int iDimZ = Convert.ToInt16(dimCZ);
+                                            var entity = getItemDimension(grid.Tag.ToString(), edgeCode.ToString(),
+                                                iDimZ);
+                                            if (entity != null && entity.dimX > -1)
+                                            {
+                                                decimal jDimX = dDimX + entity.dimX;
+                                                if (dDimFX != jDimX)
+                                                {
+                                                    grid.Columns["dimFX"].OptionsColumn.AllowEdit = false;
+                                                    grid.SetRowCellValue(e.RowHandle, grid.Columns["dimFX"], jDimX);
+                                                }
+                                            }
+                                            //DataTable tb = Data.YLOrdersData.getItemDimensions(SqlConn, grid.Tag.ToString(),
+                                            //    edgeCode.ToString(), iDimZ);
+                                            //if (tb != null && tb.Rows.Count == 1)
+                                            //{
+                                            //    decimal jDimX = dDimX + Convert.ToDecimal(tb.Rows[0][0]);
+                                            //    if (dDimFX != jDimX)
+                                            //    {
+                                            //        grid.Columns["dimFX"].OptionsColumn.AllowEdit = false;
+                                            //        grid.SetRowCellValue(e.RowHandle, grid.Columns["dimFX"], jDimX);
+                                            //    }
+                                            //}
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            throw new Exception(ex.Message);
                                         }
                                     }
-                                    catch (Exception ex)
+                                    #endregion
+                                }
+                                else if (e.Column.FieldName == "dimCY")
+                                {
+                                    #region 尺寸关联，根据裁切尺寸，计算完工
+                                    if (dimCY != null && dimCY != DBNull.Value && dimFY != null && dimFY != DBNull.Value &&
+                                        dimCZ != null && dimCZ != DBNull.Value && edgeCode != null && edgeCode != DBNull.Value)
                                     {
-                                        throw new Exception(ex.Message);
+                                        try
+                                        {
+                                            decimal dDimY = Convert.ToDecimal(dimCY);
+                                            decimal dDimFY = Convert.ToDecimal(dimFY);
+                                            int iDimZ = Convert.ToInt16(dimCZ);
+                                            var entity = getItemDimension(grid.Tag.ToString(), edgeCode.ToString(), iDimZ);
+                                            if (entity != null && entity.dimY > -1 )
+                                            {
+                                                decimal jDimY = dDimY + entity.dimY;
+                                                if (dDimFY != jDimY)
+                                                {
+                                                    grid.Columns["dimFY"].OptionsColumn.AllowEdit = false;
+                                                    grid.SetRowCellValue(e.RowHandle, grid.Columns["dimFY"], jDimY);
+                                                }
+                                            }
+
+                                            //DataTable tb = Data.YLOrdersData.getItemDimensions(SqlConn, grid.Tag.ToString(),
+                                            //    edgeCode.ToString(), iDimZ);
+                                            //if (tb != null && tb.Rows.Count == 1)
+                                            //{
+                                            //    decimal jDimY = dDimY + Convert.ToDecimal(tb.Rows[0][1]);
+                                            //    if (dDimFY != jDimY)
+                                            //    {
+                                            //        grid.Columns["dimFY"].OptionsColumn.AllowEdit = false;
+                                            //        grid.SetRowCellValue(e.RowHandle, grid.Columns["dimFY"], jDimY);
+                                            //    }
+                                            //}
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            throw new Exception(ex.Message);
+                                        }
                                     }
+                                    #endregion
+                                }
+                                else if (e.Column.FieldName == "dimCZ")
+                                {
+                                    #region 尺寸关联，根据裁切尺寸，计算完工
+                                    if (dimCX != null && dimCX != DBNull.Value && dimCY != null && dimCY != DBNull.Value &&
+                                        dimCZ != null && dimCZ != DBNull.Value && dimFX != null && dimFX != DBNull.Value && 
+                                        dimFY != null && dimFY != DBNull.Value && dimFZ != null && dimFZ != DBNull.Value && 
+                                        edgeCode != null && edgeCode != DBNull.Value)
+                                    {
+                                        try
+                                        {
+                                            decimal dDimX = Convert.ToDecimal(dimCX);
+                                            decimal dDimY = Convert.ToDecimal(dimCY);
+                                            decimal dDimZ = Convert.ToDecimal(dimCZ);
+                                            int iDimZ = Convert.ToInt16(dimCZ);
+                                            decimal dDimFX = Convert.ToDecimal(dimFX);
+                                            decimal dDimFY = Convert.ToDecimal(dimFY);
+                                            decimal dDimFZ = Convert.ToDecimal(dimFZ);
+
+                                            var entity = getItemDimension(grid.Tag.ToString(), edgeCode.ToString(), iDimZ);
+                                            if (entity != null && entity.dimX >-1)
+                                            {
+                                                decimal tDimX = dDimX + entity.dimX;
+                                                if (dDimFX != tDimX)
+                                                {
+                                                    grid.Columns["dimFX"].OptionsColumn.AllowEdit = false;
+                                                    grid.SetRowCellValue(e.RowHandle, grid.Columns["dimFX"], tDimX);
+                                                }
+                                                decimal tDimY = dDimY + entity.dimY;
+                                                if (dDimFY != tDimY)
+                                                {
+                                                    grid.Columns["dimFY"].OptionsColumn.AllowEdit = false;
+                                                    grid.SetRowCellValue(e.RowHandle, grid.Columns["dimFY"], tDimY);
+                                                }
+                                                //当裁切厚为整数，则取整数
+                                                if (iDimZ == dDimZ)
+                                                {
+                                                    if (dDimFZ != dDimZ)
+                                                    {
+                                                        grid.Columns["dimFZ"].OptionsColumn.AllowEdit = false;
+                                                        grid.SetRowCellValue(e.RowHandle, grid.Columns["dimFZ"], dDimZ);
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    decimal tDimZ = dDimZ + entity.dimZ;
+                                                    if (dDimFZ != tDimZ)
+                                                    {
+                                                        grid.Columns["dimFZ"].OptionsColumn.AllowEdit = false;
+                                                        grid.SetRowCellValue(e.RowHandle, grid.Columns["dimFZ"], tDimZ);
+                                                    }
+                                                }
+                                            }
+
+                                            //DataTable tb = Data.YLOrdersData.getItemDimensions(SqlConn, grid.Tag.ToString(),
+                                            //    edgeCode.ToString(), dDimZ);
+                                            //if (tb != null && tb.Rows.Count == 1)
+                                            //{
+                                            //    decimal tDimX = dDimX + Convert.ToDecimal(tb.Rows[0][0]);
+                                            //    if (dDimFX != tDimX)
+                                            //    {
+                                            //        grid.Columns["dimFX"].OptionsColumn.AllowEdit = false;
+                                            //        grid.SetRowCellValue(e.RowHandle, grid.Columns["dimFX"], tDimX);
+                                            //    }
+                                            //    decimal tDimY = dDimY + Convert.ToDecimal(tb.Rows[0][1]);
+                                            //    if (dDimFY != tDimY)
+                                            //    {
+                                            //        grid.Columns["dimFY"].OptionsColumn.AllowEdit = false;
+                                            //        grid.SetRowCellValue(e.RowHandle, grid.Columns["dimFY"], tDimY);
+                                            //    }
+                                            //    decimal tDimZ = dDimZ + Convert.ToDecimal(tb.Rows[0][2]);
+                                            //    if (dDimFZ != tDimZ)
+                                            //    {
+                                            //        grid.Columns["dimFZ"].OptionsColumn.AllowEdit = false;
+                                            //        grid.SetRowCellValue(e.RowHandle, grid.Columns["dimFZ"], tDimZ);
+                                            //    }
+                                            //}
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            throw new Exception(ex.Message);
+                                        }
+                                    }
+                                    #endregion
+                                }
+                                else if (e.Column.FieldName == "dimFX")
+                                {
+                                    #region 尺寸关联，根据完工尺寸，计算裁切
+                                    if (dimCX != null && dimCX != DBNull.Value && dimFX != null && dimFX != DBNull.Value &&
+                                        dimFZ != null && dimFZ != DBNull.Value && edgeCode != null && edgeCode != DBNull.Value)
+                                    {
+                                        try
+                                        {
+                                            decimal dDimCX = Convert.ToDecimal(dimCX);
+                                            decimal dDimFX = Convert.ToDecimal(dimFX);
+                                            int dDimFZ = Convert.ToInt16(dimFZ);
+                                            var entity = getItemDimension(grid.Tag.ToString(),
+                                                edgeCode.ToString(), dDimFZ);
+                                            if (entity != null && entity.dimX > -1)
+                                            {
+                                                decimal tDimX = dDimFX - entity.dimX;
+                                                if (dDimCX != tDimX)
+                                                {
+                                                    grid.Columns["dimCX"].OptionsColumn.AllowEdit = false;
+                                                    grid.SetRowCellValue(e.RowHandle, grid.Columns["dimCX"], tDimX);
+                                                }
+                                            }
+                                            //DataTable tb = Data.YLOrdersData.getItemDimensions(SqlConn, grid.Tag.ToString(),
+                                            //    edgeCode.ToString(), dDimFZ);
+                                            //if (tb != null && tb.Rows.Count == 1)
+                                            //{
+                                            //    decimal tDimX = dDimFX - Convert.ToDecimal(tb.Rows[0][0]);
+                                            //    if (dDimCX != tDimX)
+                                            //    {
+                                            //        grid.Columns["dimCX"].OptionsColumn.AllowEdit = false;
+                                            //        grid.SetRowCellValue(e.RowHandle, grid.Columns["dimCX"], tDimX);
+                                            //    }
+                                            //}
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            throw new Exception(ex.Message);
+                                        }
+                                    }
+                                    #endregion
+                                }
+                                else if (e.Column.FieldName == "dimFY")
+                                {
+                                    #region 尺寸关联，根据完工尺寸，计算裁切
+                                    if (dimCY != null && dimCY != DBNull.Value && dimFY != null && dimFY != DBNull.Value &&
+                                        dimFZ != null && dimFZ != DBNull.Value && edgeCode != null && edgeCode != DBNull.Value)
+                                    {
+                                        try
+                                        {
+                                            decimal dDimCY = Convert.ToDecimal(dimCY);
+                                            decimal dDimFY = Convert.ToDecimal(dimFY);
+                                            int dDimFZ = Convert.ToInt16(dimFZ);
+                                            var entity = getItemDimension( grid.Tag.ToString(),
+                                                edgeCode.ToString(), dDimFZ);
+                                            if (entity != null && entity.dimX > -1 )
+                                            {
+                                                decimal tDimY = dDimFY - entity.dimY;
+                                                if (dDimCY != tDimY)
+                                                {
+                                                    grid.Columns["dimCY"].OptionsColumn.AllowEdit = false;
+                                                    grid.SetRowCellValue(e.RowHandle, grid.Columns["dimCY"], tDimY);
+                                                }
+                                            }
+
+                                            //DataTable tb = Data.YLOrdersData.getItemDimensions(SqlConn, grid.Tag.ToString(),
+                                            //    edgeCode.ToString(), dDimFZ);
+                                            //if (tb != null && tb.Rows.Count == 1)
+                                            //{
+                                            //    decimal tDimY = dDimFY - Convert.ToDecimal(tb.Rows[0][1]);
+                                            //    if (dDimCY != tDimY)
+                                            //    {
+                                            //        grid.Columns["dimCY"].OptionsColumn.AllowEdit = false;
+                                            //        grid.SetRowCellValue(e.RowHandle, grid.Columns["dimCY"], tDimY);
+                                            //    }
+                                            //}
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            throw new Exception(ex.Message);
+                                        }
+                                    }
+                                    #endregion
+                                }
+                                else if (e.Column.FieldName == "dimFZ")
+                                {
+                                    #region 尺寸关联，根据完工尺寸，计算裁切
+                                    if (dimCX != null && dimCX != DBNull.Value && dimCY != null && dimCY != DBNull.Value &&
+                                        dimCZ != null && dimCZ != DBNull.Value && dimFX != null && dimFX != DBNull.Value &&
+                                        dimFY != null && dimFY != DBNull.Value && dimFZ != null && dimFZ != DBNull.Value &&
+                                        edgeCode != null && edgeCode != DBNull.Value)
+                                    {
+                                        try
+                                        {
+                                            decimal dDimCX = Convert.ToDecimal(dimCX);
+                                            decimal dDimCY = Convert.ToDecimal(dimCY);
+                                            decimal dDimCZ = Convert.ToDecimal(dimCZ);
+                                            decimal dDimFX = Convert.ToDecimal(dimFX);
+                                            decimal dDimFY = Convert.ToDecimal(dimFY);
+                                            int dDimFZ = Convert.ToInt16(dimFZ);
+                                            var entity = getItemDimension( grid.Tag.ToString(),
+                                                edgeCode.ToString(), dDimFZ);
+                                            if (entity != null && entity.dimX > -1 )
+                                            {
+                                                decimal tDimX = dDimFX - entity.dimX;
+                                                if (dDimCX != tDimX)
+                                                {
+                                                    grid.Columns["dimCX"].OptionsColumn.AllowEdit = false;
+                                                    grid.SetRowCellValue(e.RowHandle, grid.Columns["dimCX"], tDimX);
+                                                }
+                                                decimal tDimY = dDimFY - entity.dimY;
+                                                if (dDimCY != tDimY)
+                                                {
+                                                    grid.Columns["dimCY"].OptionsColumn.AllowEdit = false;
+                                                    grid.SetRowCellValue(e.RowHandle, grid.Columns["dimCY"], tDimY);
+                                                }
+                                                decimal tDimZ = dDimFZ - entity.dimZ;
+                                                if (dDimCZ != tDimZ)
+                                                {
+                                                    grid.Columns["dimCZ"].OptionsColumn.AllowEdit = false;
+                                                    grid.SetRowCellValue(e.RowHandle, grid.Columns["dimCZ"], tDimZ);
+                                                }
+                                            }
+
+                                            //DataTable tb = Data.YLOrdersData.getItemDimensions(SqlConn, grid.Tag.ToString(),
+                                            //    edgeCode.ToString(), dDimFZ);
+                                            //if (tb != null && tb.Rows.Count == 1)
+                                            //{
+                                            //    decimal tDimX = dDimFX - Convert.ToDecimal(tb.Rows[0][0]);
+                                            //    if (dDimCX != tDimX)
+                                            //    {
+                                            //        grid.Columns["dimCX"].OptionsColumn.AllowEdit = false;
+                                            //        grid.SetRowCellValue(e.RowHandle, grid.Columns["dimCX"], tDimX);
+                                            //    }
+                                            //    decimal tDimY = dDimFY - Convert.ToDecimal(tb.Rows[0][1]);
+                                            //    if (dDimCY != tDimY)
+                                            //    {
+                                            //        grid.Columns["dimCY"].OptionsColumn.AllowEdit = false;
+                                            //        grid.SetRowCellValue(e.RowHandle, grid.Columns["dimCY"], tDimY);
+                                            //    }
+                                            //    decimal tDimZ = dDimFZ - Convert.ToDecimal(tb.Rows[0][2]);
+                                            //    if (dDimCZ != tDimZ)
+                                            //    {
+                                            //        grid.Columns["dimCZ"].OptionsColumn.AllowEdit = false;
+                                            //        grid.SetRowCellValue(e.RowHandle, grid.Columns["dimCZ"], tDimZ);
+                                            //    }
+                                            //}
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            throw new Exception(ex.Message);
+                                        }
+                                    }
+                                    #endregion
+                                }
+                                else if (e.Column.FieldName == "edgeCode")
+                                {
+                                    #region 尺寸关联，根据完工尺寸，计算裁切
+                                    if (dimCX != null && dimCX != DBNull.Value && dimCY != null && dimCY != DBNull.Value &&
+                                        dimFX != null && dimFX != DBNull.Value &&
+                                        dimFY != null && dimFY != DBNull.Value && dimFZ != null && dimFZ != DBNull.Value &&
+                                        edgeCode != null && edgeCode != DBNull.Value)
+                                    {
+                                        try
+                                        {
+                                            decimal dDimCX = Convert.ToDecimal(dimCX);
+                                            decimal dDimCY = Convert.ToDecimal(dimCY);
+                                            decimal dDimFX = Convert.ToDecimal(dimFX);
+                                            decimal dDimFY = Convert.ToDecimal(dimFY);
+                                            int dDimFZ = Convert.ToInt16(dimFZ);
+                                            var entity = getItemDimension( grid.Tag.ToString(),
+                                                edgeCode.ToString(), dDimFZ);
+                                            if (entity != null && entity.dimX > -1)
+                                            {
+                                                decimal tDimX = dDimFX - entity.dimX;
+                                                if (dDimCX != tDimX)
+                                                {
+                                                    grid.Columns["dimCX"].OptionsColumn.AllowEdit = false;
+                                                    grid.SetRowCellValue(e.RowHandle, grid.Columns["dimCX"], tDimX);
+                                                }
+                                                decimal tDimY = dDimFY - entity.dimY;
+                                                if (dDimCY != tDimY)
+                                                {
+                                                    grid.Columns["dimCY"].OptionsColumn.AllowEdit = false;
+                                                    grid.SetRowCellValue(e.RowHandle, grid.Columns["dimCY"], tDimY);
+                                                }
+                                            }
+
+                                            //DataTable tb = Data.YLOrdersData.getItemDimensions(SqlConn, grid.Tag.ToString(),
+                                            //    edgeCode.ToString(), dDimFZ);
+                                            //if (tb != null && tb.Rows.Count == 1)
+                                            //{
+                                            //    decimal tDimX = dDimFX - Convert.ToDecimal(tb.Rows[0][0]);
+                                            //    if (dDimCX != tDimX)
+                                            //    {
+                                            //        grid.Columns["dimCX"].OptionsColumn.AllowEdit = false;
+                                            //        grid.SetRowCellValue(e.RowHandle, grid.Columns["dimCX"], tDimX);
+                                            //    }
+                                            //    decimal tDimY = dDimFY - Convert.ToDecimal(tb.Rows[0][1]);
+                                            //    if (dDimCY != tDimY)
+                                            //    {
+                                            //        grid.Columns["dimCY"].OptionsColumn.AllowEdit = false;
+                                            //        grid.SetRowCellValue(e.RowHandle, grid.Columns["dimCY"], tDimY);
+                                            //    }
+                                            //}
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            throw new Exception(ex.Message);
+                                        }
+                                    }
+                                    #endregion
                                 }
                             }
                             #endregion
-                        }
-                        else
-                        {
-                            #region 计算面积
 
+                            #region 计算面积
                             if (grid.Columns["Area"] != null)
                             {
                                 if (e.Column.FieldName == "dimFX" || e.Column.FieldName == "dimFY")
@@ -1115,6 +1572,7 @@ namespace Tech2020.InSight.Oppein.YLWorkers.Forms
                                     {
                                         var areaValue = Math.Round(
                                             Convert.ToDecimal(dimFX) * Convert.ToDecimal(dimFY) / 1000000, 3);
+                                        //grid.Columns["Area"].OptionsColumn.AllowEdit = false;
                                         grid.SetRowCellValue(e.RowHandle, grid.Columns["Area"], areaValue);
                                     }
                                 }
@@ -1129,20 +1587,17 @@ namespace Tech2020.InSight.Oppein.YLWorkers.Forms
                                     {
                                         var areaValue = Math.Round(
                                             Convert.ToDecimal(dimCX) * Convert.ToDecimal(dimCY) / 1000000, 3);
+                                        //grid.Columns["cArea"].OptionsColumn.AllowEdit = false;
                                         grid.SetRowCellValue(e.RowHandle, grid.Columns["cArea"], areaValue);
                                     }
                                 }
                             }
-
                             #endregion
-                        }
-                        if (this.lblOtp.Text == "遗留单" && grid.Columns["LegacyPrice"] != null && grid.Columns["Price"] != null)
-                        {
-                            if (grid.Tag != null && !string.IsNullOrEmpty(grid.Tag.ToString()) &&
-                                (grid.Tag.ToString() == "普通五金" || grid.Tag.ToString() == "实木五金"))
+
+                            if (grid.Tag.ToString() == "普通五金" || grid.Tag.ToString() == "实木五金")
                             {
-                                #region 五金
-                                if (grid.Columns["oriReqQty"] != null)
+                                #region 遗留单五金部分，根据数量计算总价
+                                if (grid.Columns["oriReqQty"] != null && grid.Columns["LegacyPrice"] != null && grid.Columns["Price"] != null)
                                 {
                                     if (e.Column.FieldName == "oriReqQty" || e.Column.FieldName == "Price")
                                     {
@@ -1153,70 +1608,83 @@ namespace Tech2020.InSight.Oppein.YLWorkers.Forms
                                             if (Convert.ToDecimal(Price) > 0)
                                             {
                                                 var LegacyPrice = Math.Round(Convert.ToDecimal(oriReqQty) * Convert.ToDecimal(Price), 0);
+                                                //grid.Columns["LegacyPrice"].OptionsColumn.AllowEdit = false;
                                                 grid.SetRowCellValue(e.RowHandle, grid.Columns["LegacyPrice"], LegacyPrice);
                                             }
                                         }
-                                        //else
-                                        //{
-                                        //    grid.SetRowCellValue(e.RowHandle, grid.Columns["LegacyPrice"], 0);
-                                        //}
                                     }
                                 }
                                 #endregion
                             }
                             else
                             {
-                                if (grid.Columns["dimFX"] != null && grid.Columns["dimFY"] != null)
+                                #region 存在汇总时，要计算汇总信息。注意汇总规则，当修改完工尺寸时，以完工尺寸面积为准汇总，反之以裁切尺寸面积为准
+                                if (grid.Columns["LegacyPrice"] != null && grid.Columns["Price"] != null)
                                 {
-                                    #region 使用完工尺寸计算
-                                    if (e.Column.FieldName == "dimFX" || e.Column.FieldName == "dimFY" ||
-                                        e.Column.FieldName == "Price")
+                                    var Price = grid.GetRowCellValue(e.RowHandle, grid.Columns["Price"]);
+                                    if (e.Column.FieldName == "dimFX" || e.Column.FieldName == "dimFY")
                                     {
                                         var dimFX = grid.GetRowCellValue(e.RowHandle, grid.Columns["dimFX"]);
                                         var dimFY = grid.GetRowCellValue(e.RowHandle, grid.Columns["dimFY"]);
-                                        var Price = grid.GetRowCellValue(e.RowHandle, grid.Columns["Price"]);
                                         if (dimFX != null && dimFX != DBNull.Value && dimFY != null && dimFY != DBNull.Value && Price != null && Price != DBNull.Value && Convert.ToDecimal(Price) > 0)
                                         {
                                             var LegacyPrice = Math.Round(Convert.ToDecimal(dimFX) * Convert.ToDecimal(dimFY) * Convert.ToDecimal(Price) / 1000000, 0);
+                                            //grid.Columns["LegacyPrice"].OptionsColumn.AllowEdit = false;
                                             grid.SetRowCellValue(e.RowHandle, grid.Columns["LegacyPrice"], LegacyPrice);
                                         }
-                                        //else
-                                        //{
-                                        //    grid.SetRowCellValue(e.RowHandle, grid.Columns["LegacyPrice"], 0);
-                                        //}
                                     }
-                                    #endregion
-                                }
-                                else
-                                {
-                                    #region 若界面未显示完工尺寸，则使用裁切尺寸计算
-                                    if (grid.Columns["dimCX"] != null && grid.Columns["dimCY"] != null)
+                                    else if (e.Column.FieldName == "dimCX" || e.Column.FieldName == "dimCY")
                                     {
-                                        if (e.Column.FieldName == "dimCX" || e.Column.FieldName == "dimCY" ||
-                                            e.Column.FieldName == "Price")
+                                        var dimCX = grid.GetRowCellValue(e.RowHandle, grid.Columns["dimCX"]);
+                                        var dimCY = grid.GetRowCellValue(e.RowHandle, grid.Columns["dimCY"]);
+                                        if (dimCX != null && dimCX != DBNull.Value && dimCY != null &&
+                                            dimCY != DBNull.Value && Price != null && Price != DBNull.Value
+                                            && Convert.ToDecimal(Price) > 0)
+                                        {
+                                            var LegacyPrice = Math.Round(
+                                                Convert.ToDecimal(dimCX) * Convert.ToDecimal(dimCY) *
+                                                Convert.ToDecimal(Price) / 1000000, 0);
+                                            //grid.Columns["LegacyPrice"].OptionsColumn.AllowEdit = false;
+                                            grid.SetRowCellValue(e.RowHandle, grid.Columns["LegacyPrice"], LegacyPrice);
+                                        }
+                                    }
+                                    else if (e.Column.FieldName == "Price")
+                                    {
+                                        #region Price
+                                        if (grid.Columns["dimFX"] != null && grid.Columns["dimFY"] != null)
+                                        {
+                                            var dimFX = grid.GetRowCellValue(e.RowHandle, grid.Columns["dimFX"]);
+                                            var dimFY = grid.GetRowCellValue(e.RowHandle, grid.Columns["dimFY"]);
+                                            if (dimFX != null && dimFX != DBNull.Value && dimFY != null && dimFY != DBNull.Value && Price != null && Price != DBNull.Value && Convert.ToDecimal(Price) > 0)
+                                            {
+                                                var LegacyPrice = Math.Round(Convert.ToDecimal(dimFX) * Convert.ToDecimal(dimFY) * Convert.ToDecimal(Price) / 1000000, 0);
+                                                //grid.Columns["LegacyPrice"].OptionsColumn.AllowEdit = false;
+                                                grid.SetRowCellValue(e.RowHandle, grid.Columns["LegacyPrice"], LegacyPrice);
+                                            }
+                                        }
+                                        else if (grid.Columns["dimCX"] != null && grid.Columns["dimCY"] != null)
                                         {
                                             var dimCX = grid.GetRowCellValue(e.RowHandle, grid.Columns["dimCX"]);
                                             var dimCY = grid.GetRowCellValue(e.RowHandle, grid.Columns["dimCY"]);
-                                            var Price = grid.GetRowCellValue(e.RowHandle, grid.Columns["Price"]);
                                             if (dimCX != null && dimCX != DBNull.Value && dimCY != null &&
                                                 dimCY != DBNull.Value && Price != null && Price != DBNull.Value
                                                 && Convert.ToDecimal(Price) > 0)
                                             {
                                                 var LegacyPrice = Math.Round(
-                                                        Convert.ToDecimal(dimCX) * Convert.ToDecimal(dimCY) *
-                                                        Convert.ToDecimal(Price) / 1000000, 0);
+                                                    Convert.ToDecimal(dimCX) * Convert.ToDecimal(dimCY) *
+                                                    Convert.ToDecimal(Price) / 1000000, 0);
+                                                //grid.Columns["LegacyPrice"].OptionsColumn.AllowEdit = false;
                                                 grid.SetRowCellValue(e.RowHandle, grid.Columns["LegacyPrice"], LegacyPrice);
                                             }
-                                            //else
-                                            //{
-                                            //    grid.SetRowCellValue(e.RowHandle, grid.Columns["LegacyPrice"], 0);
-                                            //}
                                         }
+                                        #endregion
                                     }
-                                    #endregion
                                 }
+                                #endregion
                             }
                         }
+                        #endregion
+
                         #region 行的状态
                         var actValue = grid.GetRowCellValue(e.RowHandle, grid.Columns["actions"]);
                         if (actValue != null)
@@ -1238,7 +1706,14 @@ namespace Tech2020.InSight.Oppein.YLWorkers.Forms
 
                 }
             }
-
+            else
+            {
+                if (e.Column.FieldName == "dimCX" || e.Column.FieldName == "dimCY" || e.Column.FieldName == "dimCZ"
+                    || e.Column.FieldName == "dimFX" || e.Column.FieldName == "dimFY" || e.Column.FieldName == "dimFZ")
+                {
+                    e.Column.OptionsColumn.AllowEdit = true;
+                }
+            }
         }
 
         RepositoryItemButtonEdit _disItemBtn;
@@ -1341,6 +1816,7 @@ namespace Tech2020.InSight.Oppein.YLWorkers.Forms
                     }
                     //赋值整单汇总
                     string tPageName = "整单汇总";
+                    #region 整单汇总
                     foreach (Control control in this.totalPanel.Controls)
                     {
                         var tBox = control as TextEdit;
@@ -1356,6 +1832,7 @@ namespace Tech2020.InSight.Oppein.YLWorkers.Forms
                             }
                         }
                     }
+                    #endregion
                 }
             }
         }
@@ -1373,6 +1850,7 @@ namespace Tech2020.InSight.Oppein.YLWorkers.Forms
                     {
                         gv.AddNewRow();
                         DataRow dr = gv.GetDataRow(index);
+                        #region 赋值列
                         foreach (DataColumn cm in dr.Table.Columns)
                         {
                             if (cm.ColumnName == "actions")
@@ -1384,7 +1862,58 @@ namespace Tech2020.InSight.Oppein.YLWorkers.Forms
                                 gv.SetFocusedRowCellValue(gv.Columns[cm.ColumnName], dr[cm.ColumnName]);
                             }
                         }
+                        #endregion
+                        //  添加时，统计价格
+                        #region 统计价格
+                        if (dr.Table.Columns.Contains("PlateCategory") && dr.Table.Columns.Contains("LegacyPrice"))
+                        {
+                            if (dr["PlateCategory"] != DBNull.Value && !string.IsNullOrEmpty(dr["PlateCategory"].ToString())
+                               && dr["LegacyPrice"] != DBNull.Value && !string.IsNullOrEmpty(dr["LegacyPrice"].ToString()))
+                            {
+                                var curEntity = pageTotal.Find(p => p.PageName == gv.Tag.ToString() && p.PlateCategory == dr["PlateCategory"].ToString());
+                                if (curEntity != null)
+                                {
+                                    curEntity.TotalPrice = curEntity.TotalPrice + Convert.ToDecimal(dr["LegacyPrice"]);
+                                }
+                            }
+                        }
+                        #endregion
                     }
+                    //删除行后，绑定当前统计信息
+                    #region 绑定当前统计信息
+                    foreach (Control control in this.curPanel.Controls)
+                    {
+                        var tBox = control as TextEdit;
+                        if (tBox != null && tBox.Tag != null && tBox.Tag != DBNull.Value)
+                        {   //当前页签除该编辑板件类别外价格汇总
+                            var tEntity = pageTotal.Find(p => p.PageName == gv.Tag.ToString() && p.PlateCategory == tBox.Tag.ToString());
+                            if (tEntity != null)
+                            {
+                                if (tBox.Tag.ToString() == "汇总")
+                                {
+                                    tEntity.TotalPrice = pageTotal.Where(p => p.PageName == gv.Tag.ToString() && p.PlateCategory != "汇总").Sum(p => p.TotalPrice);
+                                }
+                                tBox.Text = tEntity.TotalPrice.ToString("0.##");
+                            }
+                        }
+                    }
+                    #endregion
+                    //删除行后，绑定整单统计信息
+                    #region 整单统计信息
+                    foreach (Control control in this.totalPanel.Controls)
+                    {
+                        var tBox = control as TextEdit;
+                        if (tBox != null && tBox.Tag != null && tBox.Tag != DBNull.Value)
+                        {
+                            var tEntity = pageTotal.Find(p => p.PageName == "整单汇总" && p.PlateCategory == tBox.Tag.ToString());
+                            if (tEntity != null)
+                            {
+                                tEntity.TotalPrice = pageTotal.Where(p => p.PageName != "整单汇总" && p.PlateCategory == tBox.Tag.ToString()).Sum(p => p.TotalPrice);
+                                tBox.Text = tEntity.TotalPrice.ToString("0.##");
+                            }
+                        }
+                    }
+                    #endregion
                 }
                 else
                 {
@@ -1420,8 +1949,55 @@ namespace Tech2020.InSight.Oppein.YLWorkers.Forms
                                 addRow["actions"] = (int)Common.ActionsType.sqlRemove; ;
                                 saveTable.Rows.Add(addRow);
                             }
+                            if (dr.Table.Columns.Contains("PlateCategory") && dr.Table.Columns.Contains("LegacyPrice"))
+                            {
+                                if(dr["PlateCategory"]!=DBNull.Value && !string.IsNullOrEmpty(dr["PlateCategory"].ToString())
+                                   && dr["LegacyPrice"] != DBNull.Value && !string.IsNullOrEmpty(dr["LegacyPrice"].ToString()))
+                                {
+                                    var curEntity = pageTotal.Find(p => p.PageName == gv.Tag.ToString() && p.PlateCategory == dr["PlateCategory"].ToString());
+                                    if (curEntity != null)
+                                    {
+                                        curEntity.TotalPrice = curEntity.TotalPrice - Convert.ToDecimal(dr["LegacyPrice"]);
+                                    }
+                                }
+                            }
                         }
                         gv.DeleteSelectedRows();
+                        //删除行后，绑定当前统计信息
+                        #region 绑定当前统计信息
+                        foreach (Control control in this.curPanel.Controls)
+                        {
+                            var tBox = control as TextEdit;
+                            if (tBox != null && tBox.Tag != null && tBox.Tag != DBNull.Value)
+                            {   //当前页签除该编辑板件类别外价格汇总
+                                var tEntity = pageTotal.Find(p => p.PageName == gv.Tag.ToString() && p.PlateCategory == tBox.Tag.ToString());
+                                if (tEntity != null)
+                                {
+                                    if (tBox.Tag.ToString() == "汇总")
+                                    {
+                                        tEntity.TotalPrice = pageTotal.Where(p => p.PageName == gv.Tag.ToString() && p.PlateCategory != "汇总").Sum(p => p.TotalPrice);
+                                    }
+                                    tBox.Text = tEntity.TotalPrice.ToString("0.##");
+                                }
+                            }
+                        }
+                        #endregion
+                        //删除行后，绑定整单统计信息
+                        #region 整单统计信息
+                        foreach (Control control in this.totalPanel.Controls)
+                        {
+                            var tBox = control as TextEdit;
+                            if (tBox != null && tBox.Tag != null && tBox.Tag != DBNull.Value)
+                            {
+                                var tEntity = pageTotal.Find(p => p.PageName == "整单汇总" && p.PlateCategory == tBox.Tag.ToString());
+                                if (tEntity != null)
+                                {
+                                    tEntity.TotalPrice = pageTotal.Where(p => p.PageName != "整单汇总" && p.PlateCategory == tBox.Tag.ToString()).Sum(p => p.TotalPrice);
+                                    tBox.Text = tEntity.TotalPrice.ToString("0.##");
+                                }
+                            }
+                        }
+                        #endregion
                     }
                 }
                 else
@@ -1441,6 +2017,58 @@ namespace Tech2020.InSight.Oppein.YLWorkers.Forms
                     if (table != null && table.Rows.Count == 0)
                     {
                         TabOrder.SelectedTabPage.Appearance.Header.BackColor = Color.BurlyWood;
+                    }
+                    else if(table != null && table.Rows.Count > 0 && table.Columns.Contains("PlateCategory") && table.Columns.Contains("LegacyPrice"))
+                    {
+                        //当前页签汇总
+                        #region 当前页签汇总
+                        foreach (Control control in this.curPanel.Controls)
+                        {
+                            var tBox = control as TextEdit;
+                            if (tBox != null && tBox.Tag != null && tBox.Tag != DBNull.Value)
+                            {
+                                var entity = new YLOrdPagesTotalModel();
+                                entity.PageName = gridControl.Name;
+                                entity.PlateCategory = tBox.Tag.ToString();
+                                if (pageTotal.Contains(entity))
+                                {
+                                    pageTotal.Remove(entity);
+                                }
+                                if (tBox.Tag.ToString() == "汇总")
+                                {
+                                    var price= table.Compute("SUM(LegacyPrice)", "LegacyPrice > 0");
+                                    if (price != null && price != DBNull.Value)
+                                        entity.TotalPrice = Convert.ToDecimal(price);
+                                    pageTotal.Add(entity);
+                                    tBox.Text = entity.TotalPrice.ToString("0.##");
+                                }
+                                else
+                                {
+                                    var price = table.Compute("SUM(LegacyPrice)", "PlateCategory='" + tBox.Tag + "' AND LegacyPrice > 0");
+                                    if (price != null && price != DBNull.Value)
+                                        entity.TotalPrice = Convert.ToDecimal(price);
+                                    pageTotal.Add(entity);
+                                    tBox.Text = entity.TotalPrice.ToString("0.##");
+                                }
+                            }
+                        }
+                        #endregion
+
+                        #region 整单汇总
+                        foreach (Control control in this.totalPanel.Controls)
+                        {
+                            var tBox = control as TextEdit;
+                            if (tBox != null && tBox.Tag != null && tBox.Tag != DBNull.Value)
+                            {
+                                var tEntity = pageTotal.Find(p => p.PageName == "整单汇总" && p.PlateCategory == tBox.Tag.ToString());
+                                if (tEntity != null)
+                                {
+                                    tEntity.TotalPrice = pageTotal.Where(p => p.PageName != "整单汇总" && p.PlateCategory == tBox.Tag.ToString()).Sum(p => p.TotalPrice);
+                                    tBox.Text = tEntity.TotalPrice.ToString("0.##");
+                                }
+                            }
+                        }
+                        #endregion
                     }
                     gridControl.DataSource = table;
                 }
